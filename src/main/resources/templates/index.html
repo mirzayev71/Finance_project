@@ -130,9 +130,11 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold text-dark"><i class="bi bi-wallet2 text-primary"></i> Finance Tracker <span
                     class="badge bg-primary fs-6 align-top">Pro</span></h2>
-            <a href="/export/csv" class="btn btn-outline-success btn-action">
-                <i class="bi bi-file-earmark-excel"></i> Eksport (CSV)
-            </a>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-outline-danger btn-action">
+                    <i class="bi bi-box-arrow-right"></i> Exit
+                </button>
+            </form>
         </div>
 
         <!-- Statistika Kartochalari -->
@@ -278,10 +280,34 @@
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Sana</th>
-                                    <th>Kategoriya</th>
-                                    <th>Tavsif</th>
-                                    <th class="text-end">Summa</th>
+                                    <th>
+                                        <a th:href="@{/(sortBy='date', direction=${sortBy == 'date' ? reverseDirection : 'desc'})}"
+                                            class="text-decoration-none text-dark">
+                                            Sana <i th:if="${sortBy == 'date'}"
+                                                th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a th:href="@{/(sortBy='category', direction=${sortBy == 'category' ? reverseDirection : 'asc'})}"
+                                            class="text-decoration-none text-dark">
+                                            Kategoriya <i th:if="${sortBy == 'category'}"
+                                                th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a th:href="@{/(sortBy='description', direction=${sortBy == 'description' ? reverseDirection : 'asc'})}"
+                                            class="text-decoration-none text-dark">
+                                            Tavsif <i th:if="${sortBy == 'description'}"
+                                                th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-end">
+                                        <a th:href="@{/(sortBy='amount', direction=${sortBy == 'amount' ? reverseDirection : 'desc'})}"
+                                            class="text-decoration-none text-dark">
+                                            Summa <i th:if="${sortBy == 'amount'}"
+                                                th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                                        </a>
+                                    </th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -428,13 +454,16 @@
             }
         });
 
+        // Initialize Bootstrap Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
         // 2. BAR CHART DATA
         const historyData = /*[[${last7DaysStats}]]*/[];
-        // historyData structure: [Date, Income, Expense]
-        const barLabels = historyData.map(item => {
-            const date = new Date(item[0]);
-            return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit' });
-        });
+        // historyData structure: [DateString ("dd.MM"), Income, Expense]
+        const barLabels = historyData.map(item => item[0]);
         const incomeValues = historyData.map(item => item[1]);
         const expenseValues = historyData.map(item => item[2]);
 

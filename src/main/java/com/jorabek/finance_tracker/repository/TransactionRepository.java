@@ -10,39 +10,39 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    // Barcha tranzaksiyalarni sanaga ko'ra tartiblangan holda olish
-    List<Transaction> findAllByOrderByDateDesc();
+    // Find all transactions by user ordered by date
+    List<Transaction> findAllByUserOrderByDateDesc(com.jorabek.finance_tracker.entity.User user);
 
-    // Faqat daromadlarni olish
-    @Query("SELECT t FROM Transaction t WHERE t.type = 'Income'")
-    List<Transaction> findAllIncome();
+    // Find all income by user
+    @Query("SELECT t FROM Transaction t WHERE t.user = :user AND t.type = 'Income'")
+    List<Transaction> findAllIncomeByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // Faqat xarajatlarni olish
-    @Query("SELECT t FROM Transaction t WHERE t.type = 'Expense'")
-    List<Transaction> findAllExpense();
+    // Find all expense by user
+    @Query("SELECT t FROM Transaction t WHERE t.user = :user AND t.type = 'Expense'")
+    List<Transaction> findAllExpenseByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // Umumiy daromadni hisoblash
-    @Query("SELECT COALESCE(SUM(t.amount), 0.0) FROM Transaction t WHERE t.type = 'Income'")
-    Double calculateTotalIncome();
+    // Calculate total income by user
+    @Query("SELECT COALESCE(SUM(t.amount), 0.0) FROM Transaction t WHERE t.user = :user AND t.type = 'Income'")
+    Double calculateTotalIncomeByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // Umumiy xarajatni hisoblash
-    @Query("SELECT COALESCE(SUM(t.amount), 0.0) FROM Transaction t WHERE t.type = 'Expense'")
-    Double calculateTotalExpense();
+    // Calculate total expense by user
+    @Query("SELECT COALESCE(SUM(t.amount), 0.0) FROM Transaction t WHERE t.user = :user AND t.type = 'Expense'")
+    Double calculateTotalExpenseByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // CHART 1: Xarajatlar kategoriyasi bo'yicha (Pie Chart)
-    // Result: [Category, TotalAmount]
-    @Query("SELECT t.category, SUM(t.amount) FROM Transaction t WHERE t.type = 'Expense' GROUP BY t.category")
-    List<Object[]> getExpenseByCategory();
+    // Expenses by category for user
+    @Query("SELECT t.category, SUM(t.amount) FROM Transaction t WHERE t.user = :user AND t.type = 'Expense' GROUP BY t.category")
+    List<Object[]> getExpenseByCategoryByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // CHART 2: Oxirgi 7 kunlik statistika (Bar Chart)
-    // Bu murakkabroq, shuning uchun Service-da Java bilan qilamiz yoki native query
-    // ishlatamiz.
-    // H2 da native query:
-    @Query(value = "SELECT t.date, " +
-            "SUM(CASE WHEN t.type = 'Income' THEN t.amount ELSE 0 END) as income, " +
-            "SUM(CASE WHEN t.type = 'Expense' THEN t.amount ELSE 0 END) as expense " +
-            "FROM transactions t " +
-            "WHERE t.date >= DATEADD('DAY', -6, CURRENT_DATE) " +
-            "GROUP BY t.date ORDER BY t.date", nativeQuery = true)
-    List<Object[]> getLast7DaysStats();
+    // Last 7 days stats (JPQL - DB Agnostic)
+    @Query("SELECT t.date, " +
+            "SUM(CASE WHEN t.type = 'Income' THEN t.amount ELSE 0.0 END), " +
+            "SUM(CASE WHEN t.type = 'Expense' THEN t.amount ELSE 0.0 END) " +
+            "FROM Transaction t " +
+            "WHERE t.user = :user AND t.date >= :startDate " +
+            "GROUP BY t.date ORDER BY t.date")
+    List<Object[]> getLast7DaysStatsByUser(com.jorabek.finance_tracker.entity.User user, java.time.LocalDate startDate);
+
+    // For sorting
+    List<Transaction> findAllByUser(com.jorabek.finance_tracker.entity.User user,
+            org.springframework.data.domain.Sort sort);
 }

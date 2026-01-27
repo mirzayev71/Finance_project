@@ -26,6 +26,10 @@ public class Debt {
     @Column(nullable = false)
     private String status; // "Unpaid" or "Paid"
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     // Default Constructor (JPA uchun zarur)
     public Debt() {
     }
@@ -87,6 +91,14 @@ public class Debt {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override

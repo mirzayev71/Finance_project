@@ -26,6 +26,10 @@ public class Transaction {
     @Column(nullable = false)
     private LocalDate date;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     // Default Constructor (JPA uchun zarur)
     public Transaction() {
     }
@@ -87,6 +91,14 @@ public class Transaction {
 
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override

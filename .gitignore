@@ -1,2 +1,17 @@
+# Java build fayllari
+target/
+*.class
+*.jar
+
+# IntelliJ va IDE fayllari
+.idea/
+*.iml
+out/
+
+# Ma'lumotlar bazasi (Xavfsizlik uchun!)
 data/
+*.db
 *.mv.db
+
+# MacBook tizim fayllari
+.DS_Store

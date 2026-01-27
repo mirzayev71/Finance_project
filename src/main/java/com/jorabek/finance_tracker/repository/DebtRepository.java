@@ -10,22 +10,22 @@ import java.util.List;
 @Repository
 public interface DebtRepository extends JpaRepository<Debt, Long> {
 
-    // Barcha qarzlarni sanaga ko'ra tartiblangan holda olish
-    List<Debt> findAllByOrderByLoanDateDesc();
+    // Find all debts by user ordered by loan date
+    List<Debt> findAllByUserOrderByLoanDateDesc(com.jorabek.finance_tracker.entity.User user);
 
-    // Faqat to'lanmagan qarzlarni olish
-    @Query("SELECT d FROM Debt d WHERE d.status = 'Unpaid'")
-    List<Debt> findAllUnpaidDebts();
+    // Find all unpaid debts by user
+    @Query("SELECT d FROM Debt d WHERE d.user = :user AND d.status = 'Unpaid'")
+    List<Debt> findAllUnpaidDebtsByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // Faqat to'langan qarzlarni olish
-    @Query("SELECT d FROM Debt d WHERE d.status = 'Paid'")
-    List<Debt> findAllPaidDebts();
+    // Find all paid debts by user
+    @Query("SELECT d FROM Debt d WHERE d.user = :user AND d.status = 'Paid'")
+    List<Debt> findAllPaidDebtsByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // Umumiy to'lanmagan qarzlarni hisoblash
-    @Query("SELECT COALESCE(SUM(d.amount), 0.0) FROM Debt d WHERE d.status = 'Unpaid'")
-    Double calculateTotalUnpaidDebts();
+    // Calculate total unpaid debts by user
+    @Query("SELECT COALESCE(SUM(d.amount), 0.0) FROM Debt d WHERE d.user = :user AND d.status = 'Unpaid'")
+    Double calculateTotalUnpaidDebtsByUser(com.jorabek.finance_tracker.entity.User user);
 
-    // Umumiy to'langan qarzlarni hisoblash
-    @Query("SELECT COALESCE(SUM(d.amount), 0.0) FROM Debt d WHERE d.status = 'Paid'")
-    Double calculateTotalPaidDebts();
+    // Calculate total paid debts by user
+    @Query("SELECT COALESCE(SUM(d.amount), 0.0) FROM Debt d WHERE d.user = :user AND d.status = 'Paid'")
+    Double calculateTotalPaidDebtsByUser(com.jorabek.finance_tracker.entity.User user);
 }

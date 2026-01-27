@@ -29,8 +29,11 @@ public class TransactionController {
 
     // Asosiy sahifa (Dashboard)
     @GetMapping
-    public String index(Model model) {
-        List<Transaction> transactions = transactionService.getAllTransactions();
+    public String index(Model model,
+            @RequestParam(value = "sortBy", defaultValue = "date") String sortBy,
+            @RequestParam(value = "direction", defaultValue = "desc") String direction) {
+
+        List<Transaction> transactions = transactionService.getAllTransactions(sortBy, direction);
         Double totalIncome = transactionService.getTotalIncome();
         Double totalExpense = transactionService.getTotalExpense();
         Double balance = transactionService.getBalance();
@@ -61,6 +64,11 @@ public class TransactionController {
         model.addAttribute("balance", balance);
 
         model.addAttribute("transactions", transactions);
+
+        // Sorting params for UI
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("direction", direction);
+        model.addAttribute("reverseDirection", direction.equals("asc") ? "desc" : "asc");
         model.addAttribute("transaction", new Transaction());
 
         // Qarzlar uchun model attributes

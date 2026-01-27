@@ -15,20 +15,32 @@ public class DebtService {
 
     private final DebtRepository debtRepository;
     private final TransactionService transactionService;
+    private final com.jorabek.finance_tracker.repository.UserRepository userRepository;
 
     @Autowired
-    public DebtService(DebtRepository debtRepository, TransactionService transactionService) {
+    public DebtService(DebtRepository debtRepository,
+            TransactionService transactionService,
+            com.jorabek.finance_tracker.repository.UserRepository userRepository) {
         this.debtRepository = debtRepository;
         this.transactionService = transactionService;
+        this.userRepository = userRepository;
+    }
+
+    private com.jorabek.finance_tracker.entity.User getCurrentUser() {
+        String username = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
     }
 
     // Barcha qarzlarni olish
     public List<Debt> getAllDebts() {
-        return debtRepository.findAllByOrderByLoanDateDesc();
+        return debtRepository.findAllByUserOrderByLoanDateDesc(getCurrentUser());
     }
 
     // ID bo'yicha qarzni topish
     public Optional<Debt> getDebtById(Long id) {
+        // Validation needed
         return debtRepository.findById(id);
     }
 
@@ -38,6 +50,7 @@ public class DebtService {
         if (debt.getStatus() == null || debt.getStatus().isEmpty()) {
             debt.setStatus("Unpaid");
         }
+        debt.setUser(getCurrentUser());
         return debtRepository.save(debt);
     }
 
@@ -48,23 +61,23 @@ public class DebtService {
 
     // To'lanmagan qarzlarni olish
     public List<Debt> getUnpaidDebts() {
-        return debtRepository.findAllUnpaidDebts();
+        return debtRepository.findAllUnpaidDebtsByUser(getCurrentUser());
     }
 
     // To'langan qarzlarni olish
     public List<Debt> getPaidDebts() {
-        return debtRepository.findAllPaidDebts();
+        return debtRepository.findAllPaidDebtsByUser(getCurrentUser());
     }
 
     // Umumiy to'lanmagan qarzlarni hisoblash
     public Double getTotalUnpaidDebts() {
-        Double total = debtRepository.calculateTotalUnpaidDebts();
+        Double total = debtRepository.calculateTotalUnpaidDebtsByUser(getCurrentUser());
         return total != null ? total : 0.0;
     }
 
     // Umumiy to'langan qarzlarni hisoblash
     public Double getTotalPaidDebts() {
-        Double total = debtRepository.calculateTotalPaidDebts();
+        Double total = debtRepository.calculateTotalPaidDebtsByUser(getCurrentUser());
         return total != null ? total : 0.0;
     }
 
@@ -87,6 +100,7 @@ public class DebtService {
             expenseTransaction.setCategory("Qarz to'lovi");
             expenseTransaction.setDate(LocalDate.now());
 
+            // transactionService.saveTransaction handles setting user
             transactionService.saveTransaction(expenseTransaction);
         }
     }
