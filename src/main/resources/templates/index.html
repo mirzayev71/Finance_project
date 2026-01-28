@@ -132,21 +132,42 @@
 
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold text-dark"><i class="bi bi-wallet2 text-primary"></i> Finance Tracker <span
-                    class="badge bg-primary fs-6 align-top">Pro</span></h2>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-outline-danger btn-action">
-                    <i class="bi bi-box-arrow-right"></i> Exit
-                </button>
-            </form>
-        </div>
+            <!-- Brand Logo -->
+            <div class="p-3 rounded-4 shadow-sm d-inline-block"
+                style="background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%); border: 1px solid rgba(255,255,255,0.5);">
+                <h2 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-wallet2 text-primary fs-3"></i>
+                    <span>Finance Tracker</span>
+                    <span class="badge bg-primary fs-6 rounded-pill">Pro</span>
+                </h2>
+            </div>
 
-        <!-- Real-time Clock (Header) -->
-        <div class="d-flex justify-content-end mb-2">
-            <div id="liveClock" class="text-muted fw-bold" style="font-size: 0.9rem;">
-                <!-- Clock will be here -->
+            <!-- Right Controls -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- Clock Desktop -->
+                <div id="liveClock" class="d-none d-md-block text-end pe-3 border-end">
+                    <div class="fw-bold text-dark h5 mb-0" id="clockTime">--:--</div>
+                    <small class="text-muted" id="clockDate">---</small>
+                </div>
+
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="btn btn-outline-danger btn-action rounded-pill px-4">
+                        <i class="bi bi-box-arrow-right me-1"></i> Chiqish
+                    </button>
+                </form>
             </div>
         </div>
+
+        <!-- Welcome Message -->
+        <div class="text-center mb-5">
+            <h1 class="display-6 fw-bold text-dark mb-0">
+                Shaxsiy moliyangizga xush kelibsiz, <span class="text-primary"
+                    th:text="${currentUser ?: 'Foydalanuvchi'}">Foydalanuvchi</span>!
+            </h1>
+            <p class="text-muted">Bugungi moliyaviy holatingizni nazorat qiling</p>
+        </div>
+
+
 
         <!-- Statistika Kartochalari -->
         <div class="row mb-4 g-3">
@@ -253,12 +274,12 @@
                     <h5 class="mb-3"><i class="bi bi-plus-lg"></i> Tranzaksiya</h5>
                     <form th:action="@{/add}" th:object="${transaction}" method="post" class="row g-3">
                         <div class="col-md-6">
-                            <input type="text" class="form-control" th:field="*{description}"
-                                placeholder="Tavsif (masalan: Bozordan)" required>
+                            <input type="text" class="form-control" th:field="*{description}" placeholder="Tavsif"
+                                required>
                         </div>
                         <div class="col-md-3">
                             <input type="text" id="amountInput" class="form-control" th:field="*{amount}"
-                                placeholder="Summa (masalan: 10 000)" required>
+                                placeholder="Summa" required>
                         </div>
                         <div class="col-md-3">
                             <select class="form-select" th:field="*{type}" required>
@@ -449,16 +470,36 @@
             // A. Real-time Clock (Uzbek)
             function updateClock() {
                 const now = new Date();
-                const options = { weekday: 'long', day: 'numeric', month: 'long' };
-                // e.g., "Chorshanba, 28-yanvar"
-                const datePart = now.toLocaleDateString('uz-UZ', options);
-                // "10:15:30"
-                const timePart = now.toLocaleTimeString('uz-UZ', { hour12: false });
 
-                // Capitalize first letter of weekday
-                const formattedDate = datePart.charAt(0).toUpperCase() + datePart.slice(1);
+                // Oy nomlari o'zbek tilida
+                const months = [
+                    "yanvar", "fevral", "mart", "aprel", "may", "iyun",
+                    "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"
+                ];
 
-                document.getElementById('liveClock').innerHTML = `<i class="bi bi-clock"></i> ${formattedDate}, ${timePart}`;
+                // Hafta kunlari o'zbek tilida
+                const weekDays = [
+                    "yakshanba", "dushanba", "seshanba", "chorshanba",
+                    "payshanba", "juma", "shanba"
+                ];
+
+                const day = now.getDate();
+                const month = months[now.getMonth()];
+                const weekDay = weekDays[now.getDay()];
+
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+
+                // Format: "28-yanvar, chorshanba, 13:13"
+                const dateString = `${day}-${month}, ${weekDay}`;
+                const timeString = `${hours}:${minutes}`;
+
+                // Update DOM elements if they exist
+                const timeEl = document.getElementById('clockTime');
+                const dateEl = document.getElementById('clockDate');
+
+                if (timeEl) timeEl.textContent = timeString;
+                if (dateEl) dateEl.textContent = dateString;
             }
             setInterval(updateClock, 1000);
             updateClock(); // Initial call

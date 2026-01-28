@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -29,9 +30,13 @@ public class TransactionController {
 
     // Asosiy sahifa (Dashboard)
     @GetMapping
-    public String index(Model model,
+    public String index(Model model, Principal principal,
             @RequestParam(value = "sortBy", defaultValue = "date") String sortBy,
             @RequestParam(value = "direction", defaultValue = "desc") String direction) {
+
+        String username = principal.getName();
+        model.addAttribute("currentUser", username); // Yoki userService.findByUsername(username).getFullName() agar
+                                                     // bo'lsa
 
         List<Transaction> transactions = transactionService.getAllTransactions(sortBy, direction);
         Double totalIncome = transactionService.getTotalIncome();
