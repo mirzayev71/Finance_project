@@ -3,10 +3,8 @@ package com.jorabek.finance_tracker.controller;
 import com.jorabek.finance_tracker.entity.CategoryLimit;
 import com.jorabek.finance_tracker.entity.Debt;
 import com.jorabek.finance_tracker.entity.Transaction;
-import com.jorabek.finance_tracker.entity.User;
 import com.jorabek.finance_tracker.service.DebtService;
 import com.jorabek.finance_tracker.service.TransactionService;
-import com.jorabek.finance_tracker.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -23,34 +20,18 @@ public class TransactionController {
 
     private final TransactionService transactionService;
     private final DebtService debtService;
-    private final UserService userService; // User ma'lumotlari uchun qo'shildi
 
     @Autowired
-    public TransactionController(TransactionService transactionService, DebtService debtService,
-            UserService userService) {
+    public TransactionController(TransactionService transactionService, DebtService debtService) {
         this.transactionService = transactionService;
         this.debtService = debtService;
-        this.userService = userService;
     }
 
     // Asosiy sahifa (Dashboard)
     @GetMapping
-    public String index(Model model, Principal principal,
+    public String index(Model model,
             @RequestParam(value = "sortBy", defaultValue = "date") String sortBy,
             @RequestParam(value = "direction", defaultValue = "desc") String direction) {
-
-        // 1. FOYDALANUVCHINI XAVFSIZ ANIQLASH
-        if (principal != null) {
-            User user = userService.findByUsername(principal.getName());
-            if (user != null) {
-                model.addAttribute("username", user.getFirstName());
-                model.addAttribute("currentUser", user.getUsername());
-            } else {
-                model.addAttribute("username", principal.getName());
-            }
-        } else {
-            model.addAttribute("username", "Mehmon");
-        }
 
         // 2. MOLIYAVIY MA'LUMOTLAR
         List<Transaction> transactions = transactionService.getAllTransactions(sortBy, direction);
