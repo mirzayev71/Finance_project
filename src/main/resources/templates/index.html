@@ -254,11 +254,11 @@
                     <form th:action="@{/add}" th:object="${transaction}" method="post" class="row g-3">
                         <div class="col-md-6">
                             <input type="text" class="form-control" th:field="*{description}"
-                                placeholder="Tavsif (masalan: Bozordan)" required>
+                                placeholder="Tavsif" required>
                         </div>
                         <div class="col-md-3">
                             <input type="text" id="amountInput" class="form-control" th:field="*{amount}"
-                                placeholder="Summa (masalan: 10 000)" required>
+                                placeholder="Summa" required>
                         </div>
                         <div class="col-md-3">
                             <select class="form-select" th:field="*{type}" required>
