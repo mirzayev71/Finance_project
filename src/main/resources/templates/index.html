@@ -13,8 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <!-- Flatpickr Dark Theme (Optional, fits modern look) -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css"> -->
 
     <style>
         body {
@@ -161,13 +159,12 @@
         <!-- Welcome Message -->
         <div class="text-center mb-5">
             <h1 class="display-6 fw-bold text-dark mb-0">
-                Shaxsiy moliyangizga xush kelibsiz, <span class="text-primary"
-                    th:text="${currentUser ?: 'Foydalanuvchi'}">Foydalanuvchi</span>!
+                Shaxsiy moliyangizga xush kelibsiz,
+                <span class="text-primary"
+                    th:text="${#request.userPrincipal != null ? #request.userPrincipal.name : 'Foydalanuvchi'}">Foydalanuvchi</span>!
             </h1>
             <p class="text-muted">Bugungi moliyaviy holatingizni nazorat qiling</p>
         </div>
-
-
 
         <!-- Statistika Kartochalari -->
         <div class="row mb-4 g-3">
@@ -461,11 +458,8 @@
     <!-- Cleave.js -->
     <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
 
-    <!-- Charts Logic & UI Scripts -->
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-
-        // 0. UI INITIALIZATION (Clock, Picker, Formatter)
+    <!-- 1. Pure JS (No Thymeleaf Conflict) - Clock, UI -->
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             // A. Real-time Clock (Uzbek)
             function updateClock() {
@@ -504,18 +498,18 @@
             setInterval(updateClock, 1000);
             updateClock(); // Initial call
 
-            // B. Flatpickr (Modern Date Picker)
+            // B. Flatpickr
             flatpickr("#datePicker", {
-                dateFormat: "Y-m-d", // Backend expects YYYY-MM-DD
+                dateFormat: "Y-m-d",
                 altInput: true,
-                altFormat: "d-m-Y", // User sees 28-01-2026
+                altFormat: "d-m-Y",
                 defaultDate: "today",
                 locale: {
                     firstDayOfWeek: 1
                 }
             });
 
-            // C. Cleave.js (Amount Formatting)
+            // C. Cleave.js
             new Cleave('#amountInput', {
                 numeral: true,
                 numeralThousandsGroupStyle: 'thousand',
@@ -523,18 +517,33 @@
                 numeralDecimalScale: 2
             });
 
-            // Note: Cleave formats value in UI. On submit, backend might need to strip spaces.
-            // However, Spring Boot binding often handles standard numbers. 
-            // If binding fails, we might need to strip spaces in 'onsubmit'.
-            // For now, assuming binding might fail if spaces are sent, let's fix it.
+            // D. Form Submission
             document.querySelector('form[action$="/add"]').addEventListener('submit', function (e) {
                 const amountInput = document.getElementById('amountInput');
-                // Remove spaces before submitting to ensure Double parsing works
                 amountInput.value = amountInput.value.replace(/\s/g, '');
             });
         });
 
-        // 1. PIE CHART DATA
+        // Toggle Form
+        function toggleDebtForm() {
+            var form = document.getElementById('debtForm');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        // Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+
+    <!-- 2. Thymeleaf Enabled Script (For Data Injection) -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
         // 1. PIE CHART DATA
         const expenseData = /*[[${expenseByCategory}]]*/[];
         const pieLabels = expenseData.map(item => item[0]);
@@ -562,15 +571,8 @@
             }
         });
 
-        // Initialize Bootstrap Tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
-
         // 2. BAR CHART DATA
         const historyData = /*[[${last7DaysStats}]]*/[];
-        // historyData structure: [DateString ("dd.MM"), Income, Expense]
         const barLabels = historyData.map(item => item[0]);
         const incomeValues = historyData.map(item => item[1]);
         const expenseValues = historyData.map(item => item[2]);
@@ -605,15 +607,6 @@
             }
         });
         /*]]>*/
-
-        function toggleDebtForm() {
-            var form = document.getElementById('debtForm');
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
-            } else {
-                form.style.display = 'none';
-            }
-        }
     </script>
 </body>
 
