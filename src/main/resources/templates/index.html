@@ -131,8 +131,8 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <!-- Brand Logo -->
-            <div class="p-3 rounded-4 shadow-sm d-inline-block"
-                style="background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%); border: 1px solid rgba(255,255,255,0.5);">
+            <div
+                style="border: 2px solid #4A90E2; padding: 5px 15px; border-radius: 8px; background: rgba(74, 144, 226, 0.1); display: inline-block;">
                 <h2 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
                     <i class="bi bi-wallet2 text-primary fs-3"></i>
                     <span>Finance Tracker</span>
@@ -143,9 +143,8 @@
             <!-- Right Controls -->
             <div class="d-flex align-items-center gap-3">
                 <!-- Clock Desktop -->
-                <div id="liveClock" class="d-none d-md-block text-end pe-3 border-end">
-                    <div class="fw-bold text-dark h5 mb-0" id="clockTime">--:--</div>
-                    <small class="text-muted" id="clockDate">---</small>
+                <div id="live-clock" class="d-none d-md-block text-end pe-3 border-end">
+                    <!-- Clock content will be updated by JS -->
                 </div>
 
                 <form th:action="@{/logout}" method="post" class="m-0">
@@ -157,13 +156,10 @@
         </div>
 
         <!-- Welcome Message -->
-        <div class="text-center mb-5">
-            <h1 class="display-6 fw-bold text-dark mb-0">
-                Shaxsiy moliyangizga xush kelibsiz,
-                <span class="text-primary"
-                    th:text="${#request.userPrincipal != null ? #request.userPrincipal.name : 'Foydalanuvchi'}">Foydalanuvchi</span>!
+        <div id="welcome-section" class="mb-5" style="text-align: center;">
+            <h1 style="font-size: 2rem; font-weight: bold; color: #4A90E2;">
+                Shaxsiy moliyangizga xush kelibsiz, <span th:text="${#authentication.name}">User</span>!
             </h1>
-            <p class="text-muted">Bugungi moliyaviy holatingizni nazorat qiling</p>
         </div>
 
         <!-- Statistika Kartochalari -->
@@ -462,41 +458,44 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // A. Real-time Clock (Uzbek)
+            /*[[
             function updateClock() {
                 const now = new Date();
-
-                // Oy nomlari o'zbek tilida
-                const months = [
-                    "yanvar", "fevral", "mart", "aprel", "may", "iyun",
-                    "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"
-                ];
-
-                // Hafta kunlari o'zbek tilida
-                const weekDays = [
-                    "yakshanba", "dushanba", "seshanba", "chorshanba",
-                    "payshanba", "juma", "shanba"
-                ];
-
+                const months = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"];
+                const weekDays = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
+                
                 const day = now.getDate();
                 const month = months[now.getMonth()];
                 const weekDay = weekDays[now.getDay()];
-
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
-
+                
                 // Format: "28-yanvar, chorshanba, 13:13"
-                const dateString = `${day}-${month}, ${weekDay}`;
-                const timeString = `${hours}:${minutes}`;
-
-                // Update DOM elements if they exist
-                const timeEl = document.getElementById('clockTime');
-                const dateEl = document.getElementById('clockDate');
-
-                if (timeEl) timeEl.textContent = timeString;
-                if (dateEl) dateEl.textContent = dateString;
+                const fullDateString = `${day}-${month}, ${weekDay}, ${hours}:${minutes}`;
+                
+                const clockEl = document.getElementById('live-clock');
+                if (clockEl) {
+                    clockEl.innerText = fullDateString;
+                    clockEl.style.fontWeight = "bold"; 
+                    clockEl.style.fontSize = "1.1rem";
+                }
             }
             setInterval(updateClock, 1000);
-            updateClock(); // Initial call
+            updateClock(); 
+            ]]*/
+
+            // Re-implementing without comment blocks for actual execution if outside th:inline
+            // Since this is in a normal script tag, we don't strictly need /*[[*/ but user requested it.
+            // However, inside a normal <script>, /*...*/ is a comment. 
+            // The user said "JavaScript kodini Thymeleaf bilan to'qnashmasligi uchun /*[[...]]*/ ichiga ehtiyotkorlik bilan joylashtir."
+            // This strongly suggests they want it in a th:inline="javascript" block or they think it is one. 
+            // But this specific block is NOT th:inline="javascript". 
+            // If I put it in comments here, it won't run. 
+            // I will move this logic to the th:inline block below or just write it normally here but be careful.
+            // Requirement 3 says: "JavaScript orqali soatni har soniyada yangila... joylashtir."
+            // I will put it in the th:inline block to be safe and strictly follow the "inside /*[[...]]*/" instruction which works there.
+
+            // REMOVING OLD CLOCK LOGIC FROM HERE
 
             // B. Flatpickr
             flatpickr("#datePicker", {
@@ -542,8 +541,37 @@
     </script>
 
     <!-- 2. Thymeleaf Enabled Script (For Data Injection) -->
+    <!-- 2. Thymeleaf Enabled Script (For Data Injection & Clock) -->
     <script th:inline="javascript">
         /*<![CDATA[*/
+        // 0. UZBEK CLOCK
+        function updateClock() {
+            const now = new Date();
+            const months = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"];
+            const weekDays = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
+
+            const day = now.getDate();
+            const month = months[now.getMonth()];
+            const weekDay = weekDays[now.getDay()];
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            // Format: "28-yanvar, chorshanba, 13:13"
+            const fullDateString = `${day}-${month}, ${weekDay}, ${hours}:${minutes}`;
+
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) {
+                clockEl.innerText = fullDateString;
+                // Optional styling to ensure visibility
+                clockEl.style.fontWeight = "bold";
+                clockEl.style.fontSize = "1.1rem";
+                clockEl.style.color = "#333";
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+
         // 1. PIE CHART DATA
         const expenseData = /*[[${expenseByCategory}]]*/[];
         const pieLabels = expenseData.map(item => item[0]);
