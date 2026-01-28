@@ -44,19 +44,19 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         
-        <!-- H2 Database -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- PostgreSQL Database -->
+        <!-- PostgreSQL Database (Strict) -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        
+        <!-- H2 Database (Test Only - Removed from Runtime) -->
+        <!-- <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency> -->
 
         <!-- Spring Security -->
         <dependency>
@@ -64,7 +64,7 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         
-        <!-- Spring Boot DevTools (optional, for development) -->
+        <!-- Spring Boot DevTools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
