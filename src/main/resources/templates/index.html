@@ -158,7 +158,7 @@
         <!-- Welcome Message -->
         <div id="welcome-section" class="mb-5" style="text-align: center;">
             <h1 style="font-size: 2rem; font-weight: bold; color: #4A90E2;">
-                Shaxsiy moliyangizga xush kelibsiz, <span th:text="${#authentication.name}">User</span>!
+                Shaxsiy moliyangizga xush kelibsiz, <span th:text="${username != null ? username : 'Mehmon'}"></span>!
             </h1>
         </div>
 
@@ -457,32 +457,32 @@
     <!-- 1. Pure JS (No Thymeleaf Conflict) - Clock, UI -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // A. Real-time Clock (Uzbek)
-            /*[[
+            // A. Real-time Clock (Uzbek) - SAFE JAVASCRIPT
             function updateClock() {
                 const now = new Date();
                 const months = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"];
                 const weekDays = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
-                
+
                 const day = now.getDate();
                 const month = months[now.getMonth()];
                 const weekDay = weekDays[now.getDay()];
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
-                
+
                 // Format: "28-yanvar, chorshanba, 13:13"
-                const fullDateString = `${day}-${month}, ${weekDay}, ${hours}:${minutes}`;
-                
+                // Using simple concatenation to be safe from any parser
+                const fullDateString = day + "-" + month + ", " + weekDay + ", " + hours + ":" + minutes;
+
                 const clockEl = document.getElementById('live-clock');
                 if (clockEl) {
                     clockEl.innerText = fullDateString;
-                    clockEl.style.fontWeight = "bold"; 
+                    clockEl.style.fontWeight = "bold";
                     clockEl.style.fontSize = "1.1rem";
+                    clockEl.style.color = "#333";
                 }
             }
             setInterval(updateClock, 1000);
-            updateClock(); 
-            ]]*/
+            updateClock();
 
             // Re-implementing without comment blocks for actual execution if outside th:inline
             // Since this is in a normal script tag, we don't strictly need /*[[*/ but user requested it.
@@ -544,34 +544,6 @@
     <!-- 2. Thymeleaf Enabled Script (For Data Injection & Clock) -->
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // 0. UZBEK CLOCK
-        function updateClock() {
-            const now = new Date();
-            const months = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"];
-            const weekDays = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
-
-            const day = now.getDate();
-            const month = months[now.getMonth()];
-            const weekDay = weekDays[now.getDay()];
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-
-            // Format: "28-yanvar, chorshanba, 13:13"
-            const fullDateString = `${day}-${month}, ${weekDay}, ${hours}:${minutes}`;
-
-            const clockEl = document.getElementById('live-clock');
-            if (clockEl) {
-                clockEl.innerText = fullDateString;
-                // Optional styling to ensure visibility
-                clockEl.style.fontWeight = "bold";
-                clockEl.style.fontSize = "1.1rem";
-                clockEl.style.color = "#333";
-            }
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-
         // 1. PIE CHART DATA
         const expenseData = /*[[${expenseByCategory}]]*/[];
         const pieLabels = expenseData.map(item => item[0]);
