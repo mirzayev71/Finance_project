@@ -267,8 +267,8 @@
                     <h5 class="mb-3"><i class="bi bi-plus-lg"></i> Tranzaksiya</h5>
                     <form th:action="@{/add}" th:object="${transaction}" method="post" class="row g-3">
                         <div class="col-md-6">
-                            <input type="text" class="form-control" th:field="*{description}" placeholder="Tavsif"
-                                required>
+                            <input type="text" class="form-control" th:field="*{description}"
+                                placeholder="Tavsif (masalan: Bozordan)" required>
                         </div>
                         <div class="col-md-3">
                             <input type="text" id="amountInput" class="form-control" th:field="*{amount}"
