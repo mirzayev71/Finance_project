@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Flatpickr Dark Theme (Optional, fits modern look) -->
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css"> -->
 
     <style>
         body {
@@ -137,6 +141,13 @@
             </form>
         </div>
 
+        <!-- Real-time Clock (Header) -->
+        <div class="d-flex justify-content-end mb-2">
+            <div id="liveClock" class="text-muted fw-bold" style="font-size: 0.9rem;">
+                <!-- Clock will be here -->
+            </div>
+        </div>
+
         <!-- Statistika Kartochalari -->
         <div class="row mb-4 g-3">
             <div class="col-lg-3 col-md-6">
@@ -246,8 +257,8 @@
                                 placeholder="Tavsif (masalan: Bozordan)" required>
                         </div>
                         <div class="col-md-3">
-                            <input type="number" step="0.01" class="form-control" th:field="*{amount}"
-                                placeholder="Summa" required>
+                            <input type="text" id="amountInput" class="form-control" th:field="*{amount}"
+                                placeholder="Summa (masalan: 10 000)" required>
                         </div>
                         <div class="col-md-3">
                             <select class="form-select" th:field="*{type}" required>
@@ -265,7 +276,8 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <input type="date" class="form-control" th:field="*{date}" required>
+                            <input type="text" id="datePicker" class="form-control" th:field="*{date}"
+                                placeholder="Sana tanlang" required>
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg"></i></button>
@@ -423,10 +435,65 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Cleave.js -->
+    <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
 
-    <!-- Charts Logic -->
+    <!-- Charts Logic & UI Scripts -->
     <script th:inline="javascript">
         /*<![CDATA[*/
+
+        // 0. UI INITIALIZATION (Clock, Picker, Formatter)
+        document.addEventListener('DOMContentLoaded', function () {
+            // A. Real-time Clock (Uzbek)
+            function updateClock() {
+                const now = new Date();
+                const options = { weekday: 'long', day: 'numeric', month: 'long' };
+                // e.g., "Chorshanba, 28-yanvar"
+                const datePart = now.toLocaleDateString('uz-UZ', options);
+                // "10:15:30"
+                const timePart = now.toLocaleTimeString('uz-UZ', { hour12: false });
+
+                // Capitalize first letter of weekday
+                const formattedDate = datePart.charAt(0).toUpperCase() + datePart.slice(1);
+
+                document.getElementById('liveClock').innerHTML = `<i class="bi bi-clock"></i> ${formattedDate}, ${timePart}`;
+            }
+            setInterval(updateClock, 1000);
+            updateClock(); // Initial call
+
+            // B. Flatpickr (Modern Date Picker)
+            flatpickr("#datePicker", {
+                dateFormat: "Y-m-d", // Backend expects YYYY-MM-DD
+                altInput: true,
+                altFormat: "d-m-Y", // User sees 28-01-2026
+                defaultDate: "today",
+                locale: {
+                    firstDayOfWeek: 1
+                }
+            });
+
+            // C. Cleave.js (Amount Formatting)
+            new Cleave('#amountInput', {
+                numeral: true,
+                numeralThousandsGroupStyle: 'thousand',
+                delimiter: ' ',
+                numeralDecimalScale: 2
+            });
+
+            // Note: Cleave formats value in UI. On submit, backend might need to strip spaces.
+            // However, Spring Boot binding often handles standard numbers. 
+            // If binding fails, we might need to strip spaces in 'onsubmit'.
+            // For now, assuming binding might fail if spaces are sent, let's fix it.
+            document.querySelector('form[action$="/add"]').addEventListener('submit', function (e) {
+                const amountInput = document.getElementById('amountInput');
+                // Remove spaces before submitting to ensure Double parsing works
+                amountInput.value = amountInput.value.replace(/\s/g, '');
+            });
+        });
+
+        // 1. PIE CHART DATA
         // 1. PIE CHART DATA
         const expenseData = /*[[${expenseByCategory}]]*/[];
         const pieLabels = expenseData.map(item => item[0]);

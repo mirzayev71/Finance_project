@@ -170,9 +170,10 @@ public class TransactionService {
             limit.setCategory(limit.getCategory().trim());
         }
 
-        // Note: CategoryLimit is not yet user-isolated in DB schema,
-        // so this will be global. (Simplification based on instructions)
-        Optional<CategoryLimit> existing = categoryLimitRepository.findByCategory(limit.getCategory());
+        com.jorabek.finance_tracker.entity.User user = getCurrentUser();
+        limit.setUser(user);
+
+        Optional<CategoryLimit> existing = categoryLimitRepository.findByCategoryAndUser(limit.getCategory(), user);
         if (existing.isPresent()) {
             CategoryLimit l = existing.get();
             l.setLimitAmount(limit.getLimitAmount());
@@ -182,13 +183,13 @@ public class TransactionService {
     }
 
     public List<CategoryLimit> getAllCategoryLimits() {
-        return categoryLimitRepository.findAll();
+        return categoryLimitRepository.findAllByUser(getCurrentUser());
     }
 
     // Kategoriya bo'yicha limit va ishlatilgan summani olish
     // {Limit, Spent, Percentage}
     public double[] getCategoryBudgetStatus(String category) {
-        Optional<CategoryLimit> limitOpt = categoryLimitRepository.findByCategory(category);
+        Optional<CategoryLimit> limitOpt = categoryLimitRepository.findByCategoryAndUser(category, getCurrentUser());
         if (limitOpt.isEmpty())
             return null;
 
@@ -217,7 +218,7 @@ public class TransactionService {
 
     public List<com.jorabek.finance_tracker.dto.BudgetStatusDTO> getBudgetStatuses() {
         List<com.jorabek.finance_tracker.dto.BudgetStatusDTO> statuses = new java.util.ArrayList<>();
-        List<CategoryLimit> limits = categoryLimitRepository.findAll();
+        List<CategoryLimit> limits = categoryLimitRepository.findAllByUser(getCurrentUser());
 
         for (CategoryLimit l : limits) {
             String limitCategory = l.getCategory().trim();
